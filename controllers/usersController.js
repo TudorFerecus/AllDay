@@ -1,8 +1,9 @@
 const Users = require('../models/users');
 const { StatusCodes } = require('http-status-codes');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken')
 
-const postUser = async (req, res) => {
+const register = async (req, res) => {
 
     let bodyName = req.body.name;
     let bodyMail = req.body.mail;
@@ -12,7 +13,7 @@ const postUser = async (req, res) => {
 
     if(bodyName && bodyMail && bodyPhone && bodyIP && bodyPassword)
     {
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(bodyPassword, 10);
 
         const user = await Users.create({
             name: bodyName,
@@ -40,6 +41,39 @@ const postUser = async (req, res) => {
             success: false
         })
     }
+}
+
+const login = async (req, res) => {
+    let mail = req.body.mail;
+    let password = req.body.password;
+
+    if(mail && password)
+    {
+        const user = await Users.findOne({mail: mail});
+        if(user)
+        {
+            if(mail && bcrypt.compare(password, user.password))
+            {
+                const token = jwt.sign(user.toObject(), 'Andreea');
+                
+                res.cookie('jwt', token, { httpOnly: true, saneSite: 'none'});
+
+                return res.status(StatusCodes.OK).json({
+                    success: true,
+                    user: user
+                })
+            }
+        }
+        else 
+        {
+            return res.json({success: false});
+        }
+    }
+
+    return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false
+    })
+
 }
 
 const getUser = async(req, res) => {
@@ -100,4 +134,4 @@ const getAllUsers = async (req, res) => {
 
 }
 
-module.exports = {postUser, getUser, getAllUsers};
+module.exports = {register, login, getUser, getAllUsers};
