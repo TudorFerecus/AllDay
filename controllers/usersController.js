@@ -7,7 +7,7 @@ const register = async (req, res) => {
 
     let bodyName = req.body.name;
     let bodyMail = req.body.mail;
-    let bodyIP = req.socket.localAddress;
+    let bodyIP = req.ip;
     let bodyPassword = req.body.password;
 
     console.log(bodyIP);
