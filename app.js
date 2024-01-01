@@ -23,7 +23,7 @@ app.use(cors({
 app.use('/api/v1/connections', connectionsRouter);
 app.use('/api/v1/users', usersRouter);
 
-const start = async () =>{
+const start = async () => {
     try{
         await connectDB(mongo_uri);
         app.listen(port, ()=>{

@@ -7,18 +7,18 @@ const register = async (req, res) => {
 
     let bodyName = req.body.name;
     let bodyMail = req.body.mail;
-    let bodyPhone = req.body.phone;
-    let bodyIP = req.body.IP;
+    let bodyIP = req.socket.remoteAddress;
     let bodyPassword = req.body.password;
 
-    if(bodyName && bodyMail && bodyPhone && bodyIP && bodyPassword)
+    console.log(bodyIP);
+
+    if(bodyName && bodyMail && bodyIP && bodyPassword)
     {
         const hashedPassword = await bcrypt.hash(bodyPassword, 10);
 
         const user = await Users.create({
             name: bodyName,
             mail: bodyMail,
-            phone: bodyPhone,
             IP: bodyIP,
             password: hashedPassword
         })
@@ -55,12 +55,11 @@ const login = async (req, res) => {
             if(mail && bcrypt.compare(password, user.password))
             {
                 const token = jwt.sign(user.toObject(), 'Andreea');
-                
-                res.cookie('jwt', token, { httpOnly: true, secure: true, saneSite: 'None'});
 
                 return res.status(StatusCodes.OK).json({
                     success: true,
-                    user: user
+                    user: user,
+                    token: token
                 })
             }
         }
@@ -80,7 +79,6 @@ const getUser = async(req, res) => {
 
     let bodyName = req.body.name;
     let bodyMail = req.body.mail;
-    let bodyPhone = req.body.phone;
     let bodyIP = req.body.IP;
     let bodyID = req.body.ID;
     let searchFilter = {}
@@ -90,9 +88,6 @@ const getUser = async(req, res) => {
 
     if(bodyMail)
         searchFilter.mail = bodyMail;
-
-    if(bodyPhone)
-        searchFilter.phone = bodyPhone;
 
     if(bodyIP)
         searchFilter.IP = bodyIP;
