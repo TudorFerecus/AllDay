@@ -51,4 +51,49 @@ const createNewStat = async (req, res) => {
 
 }
 
-module.exports = {createNewStat}
+const getStat = async (req, res) => {
+    const token = req.body.token; 
+    const searchFilter = getUserSearchFilter(req.body)
+
+    const user = await Users.findOne(searchFilter);
+
+    if(user)
+    {
+
+        if(validateUser(user, token))
+        {
+            const stat = await Stats.findOne({user: user._id})
+            if(stat)
+            {
+                return res.status(StatusCodes.OK).json({
+                    success: true,
+                    stat
+                })
+            }
+            else 
+            {
+                return res.status(StatusCodes.OK).json({
+                    success: false,
+                    status: "No stats assigned to user"
+                });
+            }
+        }
+        else 
+        {
+            return res.status(StatusCodes.OK).json({
+                success: false,
+                status: "Couldn't validate user"
+            });
+        }
+    }
+    else
+    {
+        return res.status(StatusCodes.OK).json({
+            success: false,
+            status: "Incorrect credentials"
+        })
+    }
+
+}
+
+module.exports = {createNewStat, getStat}
