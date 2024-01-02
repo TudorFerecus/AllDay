@@ -4,7 +4,9 @@ const cors = require('cors');
 
 const connectionsRouter = require("./routes/connections.js");
 const usersRouter = require('./routes/users.js');
+const statsRouter = require('./routes/stats.js')
 const connectDB = require('./db/connect.js');
+
 
 require('dotenv').config();
 
@@ -22,6 +24,7 @@ app.use(cors({
 
 app.use('/api/v1/connections', connectionsRouter);
 app.use('/api/v1/users', usersRouter);
+app.use('/api/v1/stats', statsRouter);
 
 const start = async () => {
     try{
