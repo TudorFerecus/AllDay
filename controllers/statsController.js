@@ -96,4 +96,66 @@ const getStat = async (req, res) => {
 
 }
 
-module.exports = {createNewStat, getStat}
+const updateStat = async (req, res) => {
+    const token = req.body.token; 
+    const searchFilter = getUserSearchFilter(req.body)
+
+    const user = await Users.findOne(searchFilter);
+
+    if(user)
+    {
+        if(validateUser(user, token))
+        {
+            const stat = await Stats.findOne({user: user._id})
+            if(stat)
+            {
+                const lastOnline = req.body.lastOnline;
+                const taskDone = req.body.taskDone;
+                const newTask = req.body.newTask;
+                const totalTime = req.body.totalTime;
+                const plusTime = req.body.plusTime;
+
+                if(lastOnline)
+                    stat.lastOnline = lastOnline;
+                if(taskDone)
+                    stat.tasksDone.append(taskDone);
+                if(newTask)
+                    stat.tasksPending.append(newTask);
+                if(totalTime)
+                    stat.totalTime = totalTime;
+                if(plusTime)
+                    stat.totalTime += plusTime;
+
+                await stat.save();
+
+                return res.status(StatusCodes.OK).json({
+                    success: true,
+                    stat
+                })
+            }
+            else 
+            {
+                return res.status(StatusCodes.OK).json({
+                    success: false,
+                    status: "No stats assigned to user"
+                });
+            }
+        }
+        else 
+        {
+            return res.status(StatusCodes.OK).json({
+                success: false,
+                status: "Couldn't validate user"
+            });
+        }
+    }
+    else
+    {
+        return res.status(StatusCodes.OK).json({
+            success: false,
+            status: "Incorrect credentials"
+        })
+    }
+}
+
+module.exports = {createNewStat, getStat, updateStat}

@@ -33,4 +33,16 @@ const validateUser = (user, token) => {
 
 }
 
-module.exports = {getUserSearchFilter, validateUser}
+const daysFromDate = (date) => {
+    let daysParse = date.split(' ')[0].split('-');
+    let daysSum = 365 * (parseInt(daysParse[0]) - 1) + 30 * (parseInt(daysParse[1]) - 1) + parseInt(daysParse[2]);
+    return daysSum
+}
+
+const minuteFromDate = (date) => {
+    let timeParse = date.split(' ')[1].split(':');
+    let minSum = 60 * parseInt(timeParse[0]) + parseInt(timeParse[1]);
+    return minSum
+}
+
+module.exports = {getUserSearchFilter, validateUser, daysFromDate, minuteFromDate}

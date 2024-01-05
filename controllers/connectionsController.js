@@ -1,5 +1,8 @@
 const Connection = require('../models/connection.js');
 const { StatusCodes } = require('http-status-codes');
+const { daysFromDate, minuteFromDate } = require('../middleware/generalFunctions.js')
+const Stats = require('../models/stats.js')
+const Users = require('../models/users.js')
 
 const getAllConnections = async (req, res) => {
 
@@ -31,8 +34,40 @@ const postConnection = async (req, res) => {
     const usersBody = req.body.users;
     const dateTimeBody = req.body.dateTime;
 
+    const allConnections = await Connection.find({});
+    const lastConnection = allConnections[allConnections.length - 1];
+
     if(usersBody && dateTimeBody)
     {
+
+        for(let userIP of usersBody)
+        {
+            const user = await Users.findOne({"IP": userIP})
+            
+            if(user)
+            {
+                console.log(user)
+                const stat = await Stats.findOne({"user": user._id});
+                
+                if(stat)
+                {   
+
+                    if(lastConnection.users.includes(userIP))
+                    {
+                        let dayDiff = (parseInt(daysFromDate(dateTimeBody)) - parseInt(daysFromDate(stat.lastOnline))) * 1440;
+
+                        let totalDiff = dayDiff + (parseInt(minuteFromDate(dateTimeBody)) - parseInt(minuteFromDate(stat.lastOnline)));
+                        
+                        stat.totalTime = totalDiff
+
+                    }
+
+                    stat.lastOnline = dateTimeBody;
+                    await stat.save();
+                }
+            }
+        }
+
         const connection = await Connection.create({
             users: usersBody,
             dateTime: dateTimeBody
