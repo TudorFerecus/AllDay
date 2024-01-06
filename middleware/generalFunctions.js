@@ -45,4 +45,9 @@ const minuteFromDate = (date) => {
     return minSum
 }
 
-module.exports = {getUserSearchFilter, validateUser, daysFromDate, minuteFromDate}
+const allowControlOrigin = (request, response, next) => {
+    response.header("Access-Control-Allow-Origin", "*");
+    next();
+  }
+
+module.exports = {getUserSearchFilter, validateUser, daysFromDate, minuteFromDate, allowControlOrigin}

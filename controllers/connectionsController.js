@@ -58,7 +58,8 @@ const postConnection = async (req, res) => {
 
                         let totalDiff = dayDiff + (parseInt(minuteFromDate(dateTimeBody)) - parseInt(minuteFromDate(stat.lastOnline)));
                         
-                        stat.totalTime = totalDiff
+                        if(totalDiff > 0)
+                            stat.totalTime += totalDiff
 
                     }
 
