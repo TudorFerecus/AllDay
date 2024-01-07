@@ -63,10 +63,10 @@ const postConnection = async (req, res) => {
                                 stat.totalTime = parseInt(stat.totalTime) + parseInt(totalDiff);
 
                         }
-
-                        stat.lastOnline = dateTimeBody;
-                        await stat.save();
                     }   
+                    
+                    stat.lastOnline = dateTimeBody;
+                    await stat.save();
                 }
             }
         }
