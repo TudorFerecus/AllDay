@@ -1,6 +1,9 @@
 const Users = require('../models/users');
+
 const { StatusCodes } = require('http-status-codes');
 const {getUserSearchFilter} = require('../middleware/generalFunctions')
+const {cloudinary} = require('../middleware/cloudinary')
+
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken')
 
@@ -11,6 +14,7 @@ const register = async (req, res) => {
     let bodyName = req.body.name;
     let bodyMail = req.body.mail;
     let bodyIP = "TODO"
+    let profilePhoto = process.env.PROFILE_PHOTO_PLACEHOLDER;
     let bodyPassword = req.body.password;
 
     console.log(bodyIP);
@@ -23,7 +27,8 @@ const register = async (req, res) => {
             name: bodyName,
             mail: bodyMail,
             IP: bodyIP,
-            password: hashedPassword
+            password: hashedPassword,
+            profilePhoto: profilePhoto
         })
 
         if(user)
@@ -119,4 +124,44 @@ const getAllUsers = async (req, res) => {
 
 }
 
-module.exports = {register, login, getUser, getAllUsers};
+const updateUser = async (req, res) => {
+
+    const searchFilter = getUserSearchFilter(req.body);
+    const user = await Users.findOne(searchFilter);
+
+    if(user)
+    {
+        const newProfilePhoto = req.body.profilePhoto;
+
+        if(newProfilePhoto)
+        {
+            let linkParse = user.profilePhoto.split('/');
+            let fileName = linkParse[linkParse.length - 1].split('.')[0];
+            console.log(fileName);
+            if(user.profilePhoto != process.env.PROFILE_PHOTO_PLACEHOLDER)
+                cloudinary.uploader
+                    .destroy(fileName)
+                    .then((result) => {});
+            user.profilePhoto = newProfilePhoto;
+        }
+        await user.save();
+
+        const token = jwt.sign(user.toObject(), process.env.JWT, {algorithm: 'HS256', noTimestamp: true});
+
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            user,
+            token
+        })
+    }
+
+    else
+        return res.status(StatusCodes.BAD_REQUEST).json({
+            success: false,
+            status: "Could not find user!"
+        })
+        
+
+}
+
+module.exports = {register, login, getUser, getAllUsers, updateUser};

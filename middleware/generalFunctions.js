@@ -48,6 +48,27 @@ const minuteFromDate = (date) => {
 const allowControlOrigin = (request, response, next) => {
     response.header("Access-Control-Allow-Origin", "*");
     next();
-  }
+}
 
-module.exports = {getUserSearchFilter, validateUser, daysFromDate, minuteFromDate, allowControlOrigin}
+const checkAuthorization = (req, res, next) => {
+    
+    const token = req.body.token;
+    if(!token)
+        return res.status(401).json({
+            success: false,
+            status: "Couldn't validate user! Redirecting to login"
+        })
+    jwt.verify(token, process.env.JWT, (err, decoded) => {
+        if (err)
+        {
+            return res.status(401).json({
+                success: false,
+                status: "Couldn't validate user! Redirecting to login"
+            })
+        }
+    });
+    
+    next();
+}
+
+module.exports = {getUserSearchFilter, validateUser, daysFromDate, minuteFromDate, allowControlOrigin, checkAuthorization}

@@ -35,7 +35,7 @@ const postConnection = async (req, res) => {
     const dateTimeBody = req.body.dateTime;
 
     const allConnections = await Connection.find({});
-    const lastConnection = allConnections[allConnections.length - 1];
+    
 
     if(usersBody && dateTimeBody)
     {
@@ -46,25 +46,27 @@ const postConnection = async (req, res) => {
             
             if(user)
             {
-                console.log(user)
                 const stat = await Stats.findOne({"user": user._id});
                 
                 if(stat)
                 {   
-
-                    if(lastConnection.users.includes(userIP))
+                    if(allConnections.length != 0)
                     {
-                        let dayDiff = (parseInt(daysFromDate(dateTimeBody)) - parseInt(daysFromDate(stat.lastOnline))) * 1440;
+                        const lastConnection = allConnections[allConnections.length - 1];
+                        if(lastConnection.users.includes(userIP))
+                        {
+                            let dayDiff = (parseInt(daysFromDate(dateTimeBody)) - parseInt(daysFromDate(stat.lastOnline))) * 1440;
 
-                        let totalDiff = dayDiff + (parseInt(minuteFromDate(dateTimeBody)) - parseInt(minuteFromDate(stat.lastOnline)));
-                        
-                        if(totalDiff > 0)
-                            stat.totalTime += totalDiff
+                            let totalDiff = dayDiff + (parseInt(minuteFromDate(dateTimeBody)) - parseInt(minuteFromDate(stat.lastOnline)));
+                            
+                            if(totalDiff > 0)
+                                stat.totalTime = parseInt(stat.totalTime) + parseInt(totalDiff);
 
-                    }
+                        }
 
-                    stat.lastOnline = dateTimeBody;
-                    await stat.save();
+                        stat.lastOnline = dateTimeBody;
+                        await stat.save();
+                    }   
                 }
             }
         }
